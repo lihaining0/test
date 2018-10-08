@@ -1,0 +1,440 @@
+1、什么是dubbo？为什么要用dubbo？什么时候用dubbo？dubbo和nginx的区别？
+什么是dubbo?
+答，dubbo是阿里开源的一个分布式微服务框架，致力于提供高性能和透明化的RPC远程服务调用方案，以及SOA服务治理方案。简单的说，dubbo就是个服务框架，如果没有分布式的需求，其实是不需要用的，只有在分布式的时候，才有dubbo这样的分布式服务框架的需求。
+为什么要用dubbo?什么时候用dubbo?
+答：当我们的网站发展的越来越庞大，必然会考虑到分布式的需求，首先就是我们项目的水平拆分（将不同的业务模块拆分出来形成一个一个单独的服务）当我们水平拆分业务特别细的时候，就需要为我们的各个服务之间定义一个统一的接口或契约关系（SOA）来实现服务的统一管理，这时候dubbo就派上用场了。
+dubbo和nginx的区别？
+答：简单说dubbo是服务层面的动态管理（负载均衡），而nginx是后台http请求层面的负载均衡，这两个东西没有可比性。
+nginx是横在用户的浏览器和自家的服务器之间
+dubbo是横在自家的服务器和自家的服务器之间
+2、适配器模式
+适配器的存在，就是为了将已存在的东西（接口）转换成适合我们的需要、能被我们所利用。在现实生活中，适配器更多的是作为一个中间层来实现这种转换作用。
+适配器模式有两种实现方式
+（1）类适配器
+class Adaptee{
+	public void specificRequest() {
+		System.out.println("被适配的类 特殊功能");
+	}
+}
+//标准接口(比如说电流的总线，没有分流)
+interface Target{
+	public void request();
+}
+class ConcreateTarget implements Target{
+
+	@Override
+	public void request() {
+		System.out.println("普通类，具有普通功能，可以通电");
+		
+	}
+	
+}
+//适配器类，继承了被适配类，同时实现标准接口
+class Adapter extends Adaptee implements Target{
+
+	@Override
+	public void request() {
+		super.specificRequest();
+	}
+	
+}
+
+public class Client {
+	
+	public static void main(String[] args) {
+		//普通类
+		Target concreateTarget = new ConcreateTarget();
+		concreateTarget.request();
+		 // 使用特殊功能类，即适配类  
+        Target adapter = new Adapter();  
+        adapter.request();  
+	}
+（2）对象适配器，不是由多继承或者继承在实现的方式来实现的，而是由委托的方式实现
+package com.tedu.cn;
+//已经存在的、具有特殊功能，但是不符合我们既要的标准接口
+class Adaptee{
+	public void specificRequest() {
+		System.out.println("被适配的类 特殊功能");
+	}
+}
+//标准接口(比如说电流的总线，没有分流)
+interface Target{
+	public void request();
+}
+class ConcreateTarget implements Target{
+
+	@Override
+	public void request() {
+		System.out.println("普通类，具有普通功能，可以通电");
+		
+	}
+	
+}
+//适配器类，直接关联被适配类，同时实现标准接口
+class Adapter implements Target{
+	private Adaptee adaptee;
+	 // 可以通过构造函数传入具体需要适配的被适配类对象  
+	public Adapter(Adaptee adaptee) {
+		this.adaptee=adaptee;
+	}
+
+	@Override
+	public void request() {
+	// 这里是使用委托的方式完成特殊功能 
+	this.adaptee.specificRequest();
+		
+	}
+
+	
+}
+
+public class Client {
+	
+	public static void main(String[] args) {
+		//普通类
+		Target concreateTarget = new ConcreateTarget();
+		concreateTarget.request();
+		 // 使用特殊功能类，即适配类  
+        Target adapter = new Adapter(new Adaptee());  
+        adapter.request();  
+	}
+3、jdk 1.7 到1.8的改变
+（1）接口的默认方法
+Java1.8以前，接口里的方法要求全部是抽象方法，java 8允许我们给接口添加一个非抽象的方法实现，只需要使用 default关键字即可。
+（2）lambda表达式
+它将允许我们将行为传到函数里。在Java 8之前，如果想将行为传入函数，仅有的选择就是匿名类，需要6行代码。而定义行为最重要的那行代码，却混在中间不够突出。Lambda表达式取代了匿名类，取消了模板，允许用函数式风格编写.
+（3）hashMap中数组长度超过16，自动转换为红黑树。
+4、数据库优化
+（1）对查询进行优化，要尽量避免全表扫描，首先应考虑在 where 及 order by 涉及的列上建立索引。
+（2）应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表扫描
+（3）.应尽量避免在 where 子句中使用 != 或 <> 操作符，否则将引擎放弃使用索引而进行全表扫描。
+（4）应尽量避免在 where 子句中使用 or 来连接条件，如果一个字段有索引，一个字段没有索引，将导致引擎放弃使用索引而进行全表扫描
+博客比较优秀：https://blog.csdn.net/wuhuagu_wuhuaguo/article/details/72875054
+5、数据结构和算法（董老师发到群里的图）
+6、高并发的配置
+（1）nginx+tomcat集群的配置（虚拟机内存512M）
+（2）redis缓存（内存512M）
+（3）Amoba数据库主从负载、数据库双机热备，mycat分库分表（虚拟机内存512M）
+（4）dubbo+rabbitMq（虚拟机内存512M）
+7、表关联查询多对多的关系(多用collection,一用association)
+用的是子查询（mybatis中结果集映射为resultMap）resultMap通过主键映射。
+(1)	一对多查询
+<resultMap type="com.kang.pojo.Orders" id="OrdersAndOrderDetailResultMap"
+ extends="OrdersuserResultMap">
+ <!-- 订单信息继承而来 -->
+ <!-- 用户信息继承而来 -->
+ <!-- 使用extends继承，不用配置订单信息和用户信息的映射 -->
+ <!-- 订单明细信息：一个订单关联查询出了多条明细，要使用collection进行一对多映射。
+ collection：对关联查询到多条记录映射到集合对象中。 
+ property：将关联查询到多条记录映射到com.kang.pojo.Orders哪个属性 。
+ ofType：指定映射到list集合属性中pojo的类型。 
+ -->
+ <collection property="orderdetails" ofType="com.kang.pojo.Orderdetail">
+ <!-- id：订单明细唯一标识，一般就是主键，注意这里使用了别名，结合SQL语句一看便知。
+ property:要将订单明细的唯一标识映射到com.kang.pojo.Orderdetail的哪个属性 -->
+ <id column="orderdetail_id" property="id" />
+ <result column="items_id" property="itemsId" />
+ <result column="items_num" property="itemsNum" />
+ <result column="orders_id" property="ordersId" />
+ </collection>
+ </resultMap>
+(2)	多对多
+  <resultMap type="com.kang.pojo.user" id="userAndItemsResultMap">
+  <!-- 用户信息 -->
+ <id column="user_id" property="id" />
+  <result column="username" property="username" />
+  <result column="sex" property="sex" />
+ <result column="address" property="address" />
+  <result column="birthday" property="birthday" />
+  <!-- 订单信息 一个用户对应多个订单，使用collection映射 -->
+  <collection property="ordersList" ofType="com.kang.pojo.Orders">
+  <id column="id" property="id" />
+  <result column="user_id" property="userId" />
+  <result column="number" property="number" />
+  <result column="createtime" property="createtime" />
+  <result column="note" property="note" />
+  <!-- 订单明细，一个订单包括多个明细 -->
+  <collection property="orderdetails" ofType="com.kang.pojo.Orderdetail">
+  <id column="orderdetail_id" property="id" />
+  <result column="items_id" property="itemsId" />
+  <result column="items_num" property="itemsNum" />
+  <result column="orders_id" property="ordersId" />
+  <!-- 商品信息 一个订单明细对应一个商品 -->
+  <association property="items" javaType="com.kang.pojo.Items">
+  <id column="items_id" property="id" />
+  <result column="items_name" property="name" />
+  <result column="items_detail" property="detail" />
+  <result column="items_price" property="price" />
+  </association>
+  </collection>
+  </collection>
+  </resultMap>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1、什么是dubbo？为什么要用dubbo？什么时候用dubbo？dubbo和nginx的区别？
+什么是dubbo?
+答，dubbo是阿里开源的一个分布式微服务框架，致力于提供高性能和透明化的RPC远程服务调用方案，以及SOA服务治理方案。简单的说，dubbo就是个服务框架，如果没有分布式的需求，其实是不需要用的，只有在分布式的时候，才有dubbo这样的分布式服务框架的需求。
+为什么要用dubbo?什么时候用dubbo?
+答：当我们的网站发展的越来越庞大，必然会考虑到分布式的需求，首先就是我们项目的水平拆分（将不同的业务模块拆分出来形成一个一个单独的服务）当我们水平拆分业务特别细的时候，就需要为我们的各个服务之间定义一个统一的接口或契约关系（SOA）来实现服务的统一管理，这时候dubbo就派上用场了。
+dubbo和nginx的区别？
+答：简单说dubbo是服务层面的动态管理（负载均衡），而nginx是后台http请求层面的负载均衡，这两个东西没有可比性。
+nginx是横在用户的浏览器和自家的服务器之间
+dubbo是横在自家的服务器和自家的服务器之间
+2、适配器模式
+适配器的存在，就是为了将已存在的东西（接口）转换成适合我们的需要、能被我们所利用。在现实生活中，适配器更多的是作为一个中间层来实现这种转换作用。
+适配器模式有两种实现方式
+（1）类适配器
+class Adaptee{
+	public void specificRequest() {
+		System.out.println("被适配的类 特殊功能");
+	}
+}
+//标准接口(比如说电流的总线，没有分流)
+interface Target{
+	public void request();
+}
+class ConcreateTarget implements Target{
+
+	@Override
+	public void request() {
+		System.out.println("普通类，具有普通功能，可以通电");
+		
+	}
+	
+}
+//适配器类，继承了被适配类，同时实现标准接口
+class Adapter extends Adaptee implements Target{
+
+	@Override
+	public void request() {
+		super.specificRequest();
+	}
+	
+}
+
+public class Client {
+	
+	public static void main(String[] args) {
+		//普通类
+		Target concreateTarget = new ConcreateTarget();
+		concreateTarget.request();
+		 // 使用特殊功能类，即适配类  
+        Target adapter = new Adapter();  
+        adapter.request();  
+	}
+（2）对象适配器，不是由多继承或者继承在实现的方式来实现的，而是由委托的方式实现
+package com.tedu.cn;
+//已经存在的、具有特殊功能，但是不符合我们既要的标准接口
+class Adaptee{
+	public void specificRequest() {
+		System.out.println("被适配的类 特殊功能");
+	}
+}
+//标准接口(比如说电流的总线，没有分流)
+interface Target{
+	public void request();
+}
+class ConcreateTarget implements Target{
+
+	@Override
+	public void request() {
+		System.out.println("普通类，具有普通功能，可以通电");
+		
+	}
+	
+}
+//适配器类，直接关联被适配类，同时实现标准接口
+class Adapter implements Target{
+	private Adaptee adaptee;
+	 // 可以通过构造函数传入具体需要适配的被适配类对象  
+	public Adapter(Adaptee adaptee) {
+		this.adaptee=adaptee;
+	}
+
+	@Override
+	public void request() {
+	// 这里是使用委托的方式完成特殊功能 
+	this.adaptee.specificRequest();
+		
+	}
+
+	
+}
+
+public class Client {
+	
+	public static void main(String[] args) {
+		//普通类
+		Target concreateTarget = new ConcreateTarget();
+		concreateTarget.request();
+		 // 使用特殊功能类，即适配类  
+        Target adapter = new Adapter(new Adaptee());  
+        adapter.request();  
+	}
+3、jdk 1.7 到1.8的改变
+（1）接口的默认方法
+Java1.8以前，接口里的方法要求全部是抽象方法，java 8允许我们给接口添加一个非抽象的方法实现，只需要使用 default关键字即可。
+（2）lambda表达式
+它将允许我们将行为传到函数里。在Java 8之前，如果想将行为传入函数，仅有的选择就是匿名类，需要6行代码。而定义行为最重要的那行代码，却混在中间不够突出。Lambda表达式取代了匿名类，取消了模板，允许用函数式风格编写.
+（3）hashMap中数组长度超过16，自动转换为红黑树。
+4、数据库优化
+（1）对查询进行优化，要尽量避免全表扫描，首先应考虑在 where 及 order by 涉及的列上建立索引。
+（2）应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表扫描
+（3）.应尽量避免在 where 子句中使用 != 或 <> 操作符，否则将引擎放弃使用索引而进行全表扫描。
+（4）应尽量避免在 where 子句中使用 or 来连接条件，如果一个字段有索引，一个字段没有索引，将导致引擎放弃使用索引而进行全表扫描
+博客比较优秀：https://blog.csdn.net/wuhuagu_wuhuaguo/article/details/72875054
+5、数据结构和算法（董老师发到群里的图）
+6、高并发的配置
+（1）nginx+tomcat集群的配置（虚拟机内存512M）
+（2）redis缓存（内存512M）
+（3）Amoba数据库主从负载、数据库双机热备，mycat分库分表（虚拟机内存512M）
+（4）dubbo+rabbitMq（虚拟机内存512M）
+7、表关联查询多对多的关系(多用collection,一用association)
+用的是子查询（mybatis中结果集映射为resultMap）resultMap通过主键映射。
+(1)	一对多查询
+<resultMap type="com.kang.pojo.Orders" id="OrdersAndOrderDetailResultMap"
+ extends="OrdersuserResultMap">
+ <!-- 订单信息继承而来 -->
+ <!-- 用户信息继承而来 -->
+ <!-- 使用extends继承，不用配置订单信息和用户信息的映射 -->
+ <!-- 订单明细信息：一个订单关联查询出了多条明细，要使用collection进行一对多映射。
+ collection：对关联查询到多条记录映射到集合对象中。 
+ property：将关联查询到多条记录映射到com.kang.pojo.Orders哪个属性 。
+ ofType：指定映射到list集合属性中pojo的类型。 
+ -->
+ <collection property="orderdetails" ofType="com.kang.pojo.Orderdetail">
+ <!-- id：订单明细唯一标识，一般就是主键，注意这里使用了别名，结合SQL语句一看便知。
+ property:要将订单明细的唯一标识映射到com.kang.pojo.Orderdetail的哪个属性 -->
+ <id column="orderdetail_id" property="id" />
+ <result column="items_id" property="itemsId" />
+ <result column="items_num" property="itemsNum" />
+ <result column="orders_id" property="ordersId" />
+ </collection>
+ </resultMap>
+(2)	多对多
+  <resultMap type="com.kang.pojo.user" id="userAndItemsResultMap">
+  <!-- 用户信息 -->
+ <id column="user_id" property="id" />
+  <result column="username" property="username" />
+  <result column="sex" property="sex" />
+ <result column="address" property="address" />
+  <result column="birthday" property="birthday" />
+  <!-- 订单信息 一个用户对应多个订单，使用collection映射 -->
+  <collection property="ordersList" ofType="com.kang.pojo.Orders">
+  <id column="id" property="id" />
+  <result column="user_id" property="userId" />
+  <result column="number" property="number" />
+  <result column="createtime" property="createtime" />
+  <result column="note" property="note" />
+  <!-- 订单明细，一个订单包括多个明细 -->
+  <collection property="orderdetails" ofType="com.kang.pojo.Orderdetail">
+  <id column="orderdetail_id" property="id" />
+  <result column="items_id" property="itemsId" />
+  <result column="items_num" property="itemsNum" />
+  <result column="orders_id" property="ordersId" />
+  <!-- 商品信息 一个订单明细对应一个商品 -->
+  <association property="items" javaType="com.kang.pojo.Items">
+  <id column="items_id" property="id" />
+  <result column="items_name" property="name" />
+  <result column="items_detail" property="detail" />
+  <result column="items_price" property="price" />
+  </association>
+  </collection>
+  </collection>
+  </resultMap>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
